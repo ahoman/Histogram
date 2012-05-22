@@ -2,12 +2,32 @@ import math
 
 class Histogram(object):
     '''
-    Creates a histogram given a list of numeric data.    
+    Creates a histogram given a list of numeric data.
+    
+    Parameters include:
+      
+        list: A list of numeric data.      
+        
+        bin_count: The number of bins that the resulting histogram should have.
+                   If not passed to the constructor, the histogram will use the
+                   Freedman-Diaconis rule to estimate bin width and count.
+        
+        filter_outliers: Boolean indication of whether outliers should be removed.
+                         Default is true and uses median +- 3*IQR to filter data.
+                         
+    Upon instantiation, this class's 'histogram' attribute will contain a 
+    dictionary representing the histogram where each key will be an integer bin
+    number and each value will be a dictionary containing the following items:
+       
+        min: The lower bin boundary (inclusive)
+        max: The upper bin bounder (inclusive for the last bin, exclusive for others)
+        count: The number of observations between min and max.
     '''
     def __init__(self, list, bin_count=None, filter_outliers=True):
         '''
         Constructor
         '''
+        # TODO: Validate data in list and bin_count
         self.median = np.median(list)
         self.list = list
         self.iqr = self._iqr()
@@ -29,26 +49,27 @@ class Histogram(object):
     
     def _build_histogram(self):
         '''
-        Build the histogram
-        
-        
+        Populate the histogram attribute.       
         '''                    
+        # Map bin numbers to corresponding elements in list.
         indexed_list = zip(map(self._bin_number,self.list),self.list)
 
-        # Probably a better way to do this in python
+        # Aggregate results by bin number
+        # TODO: Is there a more effficient way to do this?
         bins = dict()
         for (x,y) in indexed_list:
             if x in bins:
                 bins[x].append(y)
             else:
                 bins[x] = [y]
-        
   
+        # determine min/max values for each bin
         self.bin_min = [r*self.bin_width+self.minimum for r in range(self.bin_count)]
-        self.bin_max = map(lambda x: x+self.bin_width,self.bin_min) 
+        self.bin_max = map(lambda x: x+self.bin_width,self.bin_min)
         self.bin_min.sort()
         self.bin_max.sort()
          
+        # Populate self.histogram based on min, max, and count values
         i = 0
         self.histogram = dict()
         for x in range(self.bin_count):
@@ -112,8 +133,19 @@ class Histogram(object):
     
 
 if __name__ == "__main__":
-    import pprint
-    #import random
+    # TODO: The command line interface to this module should be provided
+    #       via some other means, so that we can do testing here.
+    #
+    # At minimum, tests should include:    
+    #  1. Verfication of bin widths (i.e. bin_width should be 1, given range(10)
+    #      and bin_count = 10
+    #  2. Verification of bin counts
+    #  3. Verification that outlier removal works correctly.
+    #  4. Verification of histograms for various static data with known/expected distributions.
+    #     i.e. list=range(10), bin_count=5 should yield 5 bins having count=2
+    
+    # Implement a command-line interface to the Histogram module.
+    import pprint    
     import json
     import numpy as np
     import argparse
@@ -125,35 +157,17 @@ if __name__ == "__main__":
                        help='Name of the column to process.  All columns will be processed '
                             'if this parameter is not provided.')
     args = parser.parse_args()
-    #h = Histogram(range(100,200))
-    #l = [random.randint(0,100)/10.0 for r in xrange(500)]
-    #l.sort()
-    #l = [0.1,2,0.510034,100]
-    #h = Histogram(l,10)
-    #pprint.pprint(vars(h))
-    #pprint.pprint(h.histogram)
     
-    #json.dumps(h.histogram,indent=4)
     data = np.genfromtxt(args.input_file, dtype=None, delimiter=',', names=True, invalid_raise=False)
     if (args.column == None):
         for (name) in data.dtype.names:
             print name
             h = Histogram(data[name])
-            json.dumps(h.histogram, indent=4)
-            pprint.pprint(h.histogram)
+            pprint.pprint(json.dumps(h.histogram, indent=4))
+            #pprint.pprint(h.histogram)
     else:
         print args.column
         h = Histogram(data[args.column])
-        json.dumps(h.histogram, indent=4)
-        pprint.pprint(h.histogram)
+        pprint.pprint(json.dumps(h.histogram, indent=4))
+        #pprint.pprint(h.histogram)
         
-    
-    #if (args.column == None):
-        #for x in data.func_dict.keys():
-        #  print x
-    #print 'Median college GPA ' 
-    #college_hist.median
-
-
-
-  
