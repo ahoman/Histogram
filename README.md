@@ -1,6 +1,7 @@
-Datamatica
+Histogram
 ==========
 
-Tools for data analysis.
+A module to generate histograms, given columnar numeric data.
+
 
 
