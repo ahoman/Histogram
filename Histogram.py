@@ -150,7 +150,8 @@ if __name__ == "__main__":
     import numpy as np
     import argparse
 
-    parser = argparse.ArgumentParser(description='Build histograms for numeric data.')
+    parser = argparse.ArgumentParser(description='Build histograms for numeric data. '
+                                                'Output to STDOUT in json format.')
     parser.add_argument('input_file', metavar='input_file',
                        help='CSV input file comtaining numeric data.')
     parser.add_argument('--column', dest='column', default=None,
@@ -158,16 +159,15 @@ if __name__ == "__main__":
                             'if this parameter is not provided.')
     args = parser.parse_args()
     
-    data = np.genfromtxt(args.input_file, dtype=None, delimiter=',', names=True, invalid_raise=False)
+    data = np.genfromtxt(args.input_file, 
+                dtype=None, delimiter=',', names=True, invalid_raise=False)
+
+    jsonData = {} 
     if (args.column == None):
         for (name) in data.dtype.names:
-            print name
-            h = Histogram(data[name])
-            pprint.pprint(json.dumps(h.histogram, indent=4))
-            #pprint.pprint(h.histogram)
+            jsonData[name] = Histogram(data[name]).histogram
     else:
-        print args.column
-        h = Histogram(data[args.column])
-        pprint.pprint(json.dumps(h.histogram, indent=4))
-        #pprint.pprint(h.histogram)
+        jsonData[args.column] = Histogram(data[args.column]).histogram
+    
+    print json.dumps(jsonData, indent=4)
         
